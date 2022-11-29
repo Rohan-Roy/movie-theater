@@ -1,0 +1,59 @@
+package KieRule;
+import com.jpmc.theater.entities.Movie;
+import com.jpmc.theater.entities.Shows;
+import java.time.LocalDateTime;
+
+
+function boolean isBetween( LocalDateTime ldt, int start, int end ){
+    int hhmm = ldt.getHour()*100 + ldt.getMinute();
+    return start <= hhmm && hhmm < end;
+}
+
+function boolean isDate( LocalDateTime ldt, int date ){
+    int hhmm = ldt.getDayOfMonth();
+    return hhmm == date;
+}
+
+rule "SPECIAL"
+
+when
+movieObject : Movie(specialCode==1);
+then
+movieObject.setDiscount(movieObject.getTicketPrice() * 0.2);
+end;
+
+
+rule "SEQ-1"
+
+when
+showObject : Shows(sequenceOfTheDay==1);
+then
+showObject.getMovie().setDiscount(3);
+end;
+
+
+rule "SEQ-2"
+
+when
+showObject : Shows(sequenceOfTheDay==2);
+then
+showObject.getMovie().setDiscount(2);
+end;
+
+
+rule "TIME-1"
+
+when
+showObject : Shows($ldt : showStartTime, isBetween($ldt, 11, 16));
+then
+showObject.getMovie().setDiscount(.25);
+end;
+
+
+rule "DATE-1"
+
+when
+showObject : Shows($ldt : showStartTime, isDate($ldt, 7));
+then
+showObject.getMovie().setDiscount(1);
+end;
